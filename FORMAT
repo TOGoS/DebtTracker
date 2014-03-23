@@ -1,0 +1,32 @@
+# By convention, entities get a UUID.
+entity ccd4d1b4-1a3d-460c-902f-681dcc0194fd : name @ "Ted" : email @ "ted@example.com"
+entity 1be5ab07-7829-4643-899b-bf5e4bdb12b8 : name @ "Bob Q"
+entity 6749ebd4-a421-4d45-84fe-4d211aab7475 : name @ "Sally"
+
+# Can make aliases so you don't have to type that long thing
+alias Ted = ccd4d1b4-1a3d-460c-902f-681dcc0194fd
+alias BobQ = 1be5ab07-7829-4643-899b-bf5e4bdb12b8
+alias Sally = 6749ebd4-a421-4d45-84fe-4d211aab7475
+
+# Indicate to the parser that the rest of the file is transfers,
+# which have a different syntax
+=transfers
+
+# Transfers indicate who paid what and to benefit whom
+# <date> : <amount> @ <payers> -> <recipients> [; <what>] [@ date]
+
+2014-01-03 : 600 @ BobQ -> BobQ, Ted, Sally ; rent @
+
+# Bob Q paid for rent.  Now Ted and Sally owe him 200$ each.
+
+2014-01-16 : 100 @ Sally -> Sally, BobQ ; groceries
+
+# This is equivalent to Sally buying 50$ of groceries for Bob,
+# so she now only owes him 150$
+
+# Later in the month, Ted and Sally give Bob rent checks:
+
+2014-01-25 : 200 @ Ted -> BobQ ; check
+2014-01-27 : 150 @ Sally -> BobQ ; check
+
+# At this point everyone's even and nobody owes anything.
