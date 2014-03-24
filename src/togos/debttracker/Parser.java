@@ -21,6 +21,7 @@ public class Parser
 	public static class Entity {
 		public final String id;
 		public String name = "unnamed entity";
+		public String emailAddress = null;
 		public BigDecimal balance = BigDecimal.valueOf(0, 2);
 		
 		public Entity( String id ) {
@@ -32,12 +33,15 @@ public class Parser
 		}
 	}
 	
-	public Map<String,Entity> entities = new LinkedHashMap<String,Entity>(); 
+	public Map<String,Entity> entities = new LinkedHashMap<String,Entity>();
+	protected static final BigDecimal ZERO = new BigDecimal("0.00");
+	public int transactionCount;
 	
 	// TODO: Eventually put a dece tokenizer up in here
 	static final Pattern ENTITY_PATTERN = Pattern.compile(
 		"entity \\s+ ([^\\s]+) " +
-		"(?: \\s+ : \\s+ name \\s* @ \\s* \"([^\"]*)\" )?",
+		"(?: \\s+ : \\s+ name \\s* @ \\s* \"([^\"]*)\" )?" +
+		"(?: \\s+ : \\s+ email \\s* @ \\s* \"([^\"]*)\" )?",
 		Pattern.COMMENTS);
 	static final Pattern ALIAS_PATTERN = Pattern.compile("alias \\s+ ([^\\s]+) \\s+ = \\s+ ([^\\s]+)", Pattern.COMMENTS);
 	static final Pattern TRANSACTION_PATTERN = Pattern.compile(
@@ -80,14 +84,18 @@ public class Parser
 		Map<String, Entity> aliases = new HashMap<String, Entity>(entities);
 		String line;
 		Matcher m;
+		boolean readingTransfers = false;
 		while( (line = br.readLine()) != null ) {
 			line = line.trim();
 			if( "".equals(line) || line.startsWith("#") ) continue;
 			
-			if( (m = ENTITY_PATTERN.matcher(line)).matches() ) {
+			if( "=transfers".equals(line) ) {
+				readingTransfers = true;
+			} else 	if( (m = ENTITY_PATTERN.matcher(line)).matches() ) {
 				String entityId = m.group(1);
 				Entity e = new Entity(entityId);
 				e.name = m.group(2) == null ? entityId : m.group(2);
+				e.emailAddress = m.group(3);
 				entities.put(entityId, e);
 				aliases.put(entityId, e);
 			} else if( (m = ALIAS_PATTERN.matcher(line)).matches() ) {
@@ -96,6 +104,9 @@ public class Parser
 				Entity e = getEntity(aliases, oldId);
 				aliases.put(newId, e);
 			} else if( (m = TRANSACTION_PATTERN.matcher(line)).matches() ) {
+				if( !readingTransfers ) {
+					throw new RuntimeException("Missing '=transfers' line?");
+				}
 				//String dateStr = m.group(1);
 				String amtStr = m.group(2);
 				String payerStr = m.group(3);
@@ -112,6 +123,7 @@ public class Parser
 				for( int i=0; i<recipients.length; ++i ) {
 					recipients[i].addBalance(receivedAmounts[i].negate());
 				}
+				++transactionCount;
 			} else {
 				throw new RuntimeException("Unrecognized line: " + line);
 			}
@@ -144,7 +156,26 @@ public class Parser
 	}
 	
 	public void printDebts() throws IOException {
-		// TODO
+		System.out.println(transactionCount + " transactions processed.");
+		boolean anyNonZeroBalances = false;
+		for( Entity e : entities.values() ) {
+			if( !e.balance.equals(ZERO) ) {
+				if( !anyNonZeroBalances ) {
+					System.err.println("Ending balances:");
+				}
+				System.out.println(String.format("%20s : % 10.2f", e.name, e.balance.doubleValue()));
+				anyNonZeroBalances = true;
+			}
+		}
+		if( anyNonZeroBalances ) {
+			System.err.println(
+				"Balance indicates how much money one is owed.\n" +
+				"Those with negative balances should spend some money on (or give money to)\n" +
+				"those with higher balances until their own balance is zero."
+			);
+		} else {
+			System.err.println("All balances are zero!");
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -154,6 +185,7 @@ public class Parser
 				inputFiles.add(args[i]);
 			}
 		}
+		if( inputFiles.size() == 0 ) inputFiles.add("-");
 		
 		Parser p = new Parser();
 		for( String inputFile : inputFiles ) {

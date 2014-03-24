@@ -12,7 +12,7 @@ public class ParserTest extends TestCase
 	
 	protected static final String introText =
 		"# A comment line!\n" +
-		"entity "+TED_EID+" : name @ \"Ted\"\n" +
+		"entity "+TED_EID+" : name @ \"Ted\" : email @ \"ted@example.com\"\n" +
 		"entity "+BOB_EID+" : name @ \"Bob Q\"\n" +
 		"\n" + // A blank line!
 		"alias Ted = "+TED_EID+"\n" +
