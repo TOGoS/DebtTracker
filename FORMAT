@@ -15,7 +15,7 @@ alias Sally = 6749ebd4-a421-4d45-84fe-4d211aab7475
 # Transfers indicate who paid what and to benefit whom
 # <date> : <amount> @ <payers> -> <recipients> [; <what>]
 
-2014-01-03 : 600 @ BobQ -> BobQ, Ted, Sally ; rent @
+2014-01-03 : 600 @ BobQ -> BobQ, Ted, Sally ; rent
 
 # Bob Q paid for rent.  Now Ted and Sally owe him 200$ each.
 
