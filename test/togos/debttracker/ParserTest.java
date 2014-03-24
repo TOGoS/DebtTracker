@@ -19,8 +19,13 @@ public class ParserTest extends TestCase
 		"alias BobQ = "+BOB_EID+"\n" +
 		"\n";
 	
+	protected static final String transactionTextMissingTransfersLine =
+		introText +
+		"2014-01-03 : 600 @ BobQ -> BobQ, Ted ; rent\n";
+	
 	protected static final String transactionText =
 		introText +
+		"=transfers\n" +
 		"2014-01-03 : 600 @ BobQ -> BobQ, Ted ; rent\n";
 	
 	public void testParseIntro() {
@@ -36,6 +41,15 @@ public class ParserTest extends TestCase
 			Entity bob = p.entities.get("1be5ab07-7829-4643-899b-bf5e4bdb12b8");
 			assertEquals("1be5ab07-7829-4643-899b-bf5e4bdb12b8", bob.id);
 			assertEquals("Bob Q", bob.name);
+		}
+	}
+	
+	public void testMalformedTransactions() {
+		Parser p = new Parser();
+		try {
+			p.readString(transactionTextMissingTransfersLine);
+			fail("Invalid input text should have caused an exception");
+		} catch( Exception e ) {
 		}
 	}
 	
