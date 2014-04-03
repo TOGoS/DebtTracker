@@ -46,7 +46,7 @@ public class Parser
 	static final Pattern ALIAS_PATTERN = Pattern.compile("alias \\s+ ([^\\s]+) \\s+ = \\s+ ([^\\s]+)", Pattern.COMMENTS);
 	static final Pattern TRANSACTION_PATTERN = Pattern.compile(
 		"(\\d\\d\\d\\d-\\d\\d-\\d\\d)" +
-		"\\s+ : \\s+ (\\d+) " +
+		"\\s+ : \\s+ (\\d+(?:\\.\\d+)?) " +
 		"\\s+ @ \\s+ ((?!->).+?) " +
 		"\\s+ -> \\s+ ([^;]+?) " +
 		"(?: \\s+ ; (.*))?",
