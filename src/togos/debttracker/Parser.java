@@ -36,6 +36,7 @@ public class Parser
 	public Map<String,Entity> entities = new LinkedHashMap<String,Entity>();
 	protected static final BigDecimal ZERO = new BigDecimal("0.00");
 	public int transactionCount;
+	public boolean verbose = false;
 	
 	// TODO: Eventually put a dece tokenizer up in here
 	static final Pattern ENTITY_PATTERN = Pattern.compile(
@@ -156,38 +157,47 @@ public class Parser
 	}
 	
 	public void printDebts() throws IOException {
-		System.out.println(transactionCount + " transactions processed.");
+		if( verbose ) {
+			System.out.println(transactionCount + " transactions processed.");
+		}
 		boolean anyNonZeroBalances = false;
 		for( Entity e : entities.values() ) {
 			if( !e.balance.equals(ZERO) ) {
-				if( !anyNonZeroBalances ) {
-					System.err.println("Ending balances:");
+				if( !anyNonZeroBalances && verbose ) {
+					System.out.println("Ending balances:");
 				}
 				System.out.println(String.format("%20s : % 10.2f", e.name, e.balance.doubleValue()));
 				anyNonZeroBalances = true;
 			}
 		}
 		if( anyNonZeroBalances ) {
-			System.err.println(
+			if(verbose) System.out.println(
 				"Balance indicates how much money one is owed.\n" +
 				"Those with negative balances should spend some money on (or give money to)\n" +
 				"those with higher balances until their own balance is zero."
 			);
 		} else {
-			System.err.println("All balances are zero!");
+			System.out.println("All balances are zero!");
 		}
 	}
 	
 	public static void main(String[] args) throws IOException {
 		List<String> inputFiles = new ArrayList<String>();
+		boolean verbose = false;
 		for( int i=0; i<args.length; ++i ) {
 			if( !args[i].startsWith("-") || "-".equals(args[i])) {
 				inputFiles.add(args[i]);
+			} else if( "-v".equals(args[i]) ) {
+				verbose = true;
+			} else {
+				System.err.println("Error: unrecognized argument: '"+args[i]+"'");
+				System.exit(1);
 			}
 		}
 		if( inputFiles.size() == 0 ) inputFiles.add("-");
 		
 		Parser p = new Parser();
+		p.verbose = verbose;
 		for( String inputFile : inputFiles ) {
 			p.readFile(inputFile);
 		}
