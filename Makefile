@@ -13,5 +13,8 @@ bin: src
 DebtTracker.jar: bin
 	jar -ce togos.debttracker.Parser -C bin . >DebtTracker.jar
 
+debttracker: DebtTracker.jar
+	gcj -o "$@" --main=togos.debttracker.Parser DebtTracker.jar
+
 clean:
 	rm -rf bin DebtTracker.jar
