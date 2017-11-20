@@ -18,3 +18,12 @@ debttracker: DebtTracker.jar
 
 clean:
 	rm -rf bin DebtTracker.jar
+
+install_as ?= ${HOME}/bin/debttracker
+
+${install_as}:
+	echo exec java -jar "$(shell pwd)/DebtTracker.jar" '"$$@"' > "${install_as}"
+	chmod +x "${install_as}"
+
+install: ${install_as}
+	@echo "Wrote ${install_as}"
